@@ -1,4 +1,5 @@
 ﻿using BluesReporter.Models;
+using ScottPlot;
 using System.Text.Json;
 
 namespace BluesReporter.Models
@@ -59,6 +60,7 @@ namespace BluesReporter.Models
         public int? TotalColumns { get; set; }
         public List<HeaderCellConfig> Headers { get; set; } = new();
         public List<DataCellConfig> Data { get; set; } = new();
+        public List<ChartConfig> Charts { get; set; }
     }
 
     public class HeaderCellConfig
@@ -89,6 +91,29 @@ namespace BluesReporter.Models
         public string Field { get; set; }
         public int? Order { get; set; }
         public bool RankingFlag { get; set; } = false;
+
+    }
+    public class ChartConfig
+    {
+        public int BorderSize { get; set; } = 1;
+        public int Padding { get; set; } = 1;
+        public string YValue { get; set; } = "GrowthValue";
+        public string XValue { get; set; } = "UnitName";
+        public string YLabel { get; set; } = "change value";
+        public string XLabel { get; set; } = "units";
+        public Edge LegendAlign { get; set; } = Edge.Bottom;
+        public Orientation Orientation { get; set; } = Orientation.Horizontal;
+        public string ChartType { get; set; } = "bar";
+        public bool ShowLegend { get; set; } = true;
+        public string Title { get; set; } = "this is a test";
+        public string FontName { get; set; } = "P Nazanin";
+        public int FontSize { get; set; } = 10;
+        public string FormattingText { get; set; } ="0.00'%'";
+        public bool ShowValueLable { get; set; } =true;
+        public float Rotate { get; set; } =-45;
+
+
+
 
     }
 }

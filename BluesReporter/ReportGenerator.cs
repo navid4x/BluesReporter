@@ -1,8 +1,11 @@
 ﻿using BluesReporter;
+using BluesReporter.Charts;
 using BluesReporter.Models;
 using QuestPDF.Companion;
 using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
+using System.Collections;
+using System.Reflection;
 
 namespace ReportGenerator
 {
@@ -12,8 +15,11 @@ namespace ReportGenerator
 
         public bool Generate(string outputPath)
         {
+
             List<string> errors = Validation(_config, _data, dataField);
             if (errors.Count != 0) return false;
+
+            var dataList = _data.GetType().GetProperty(dataField)!.GetValue(_data);
 
             QuestPDF.Settings.License = LicenseType.Community;
             QuestPDF.Settings.UseEnvironmentFonts = true;
@@ -45,6 +51,10 @@ namespace ReportGenerator
 
                             table.AddDataCells(_config.Content.Data, _data, dataField, RankingMethod);
                         });
+                        //col.Item().PageBreak();
+                        _config.Content.Charts = [new ChartConfig()];
+                        if (_config.Content.Charts.Any()) col.Item().AddDynamicChart(_config.Content.Charts, dataList!);
+
                     });
 
                     page.AddFooter(_config.Footer);
