@@ -43,7 +43,7 @@ namespace BluesReporter.Models
         public int FontSize { get; set; } = 20;
         public bool IsBold { get; set; } = true;
         public bool ShowOnce { get; set; } = true;
-        public float PaddingBottom { get; set; } = 5;
+        public float PaddingBottom { get; set; }
 
     }
 
@@ -80,7 +80,7 @@ namespace BluesReporter.Models
     {
         public string BGColor { get; set; } = "ffffff";
         public float BorderSize { get; set; } = 1;
-        public float Padding { get; set; } = 3;
+        public float Padding { get; set; } = 1;
         public string Align { get; set; } = "center";
         public string FormattingText { get; set; } = string.Empty;
         public bool RTL { get; set; } = true;
@@ -99,18 +99,20 @@ namespace BluesReporter.Models
         public int Padding { get; set; } = 1;
         public string YValue { get; set; } = "GrowthValue";
         public string XValue { get; set; } = "UnitName";
-        public string YLabel { get; set; } = "change value";
-        public string XLabel { get; set; } = "units";
+        public string YLabel { get; set; } = "تغییرات";
+        public string XLabel { get; set; } = "واحد ها";
         public Edge LegendAlign { get; set; } = Edge.Bottom;
         public Orientation Orientation { get; set; } = Orientation.Horizontal;
-        public string ChartType { get; set; } = "bar";
-        public bool ShowLegend { get; set; } = true;
-        public string Title { get; set; } = "this is a test";
+        public string ChartType { get; set; } = "line";
+        public bool ShowLegend { get; set; } = false;
+        public string Title { get; set; } = string.Empty;
         public string FontName { get; set; } = "P Nazanin";
         public int FontSize { get; set; } = 10;
         public string FormattingText { get; set; } ="0.00'%'";
         public bool ShowValueLable { get; set; } =true;
-        public float Rotate { get; set; } =-45;
+        public bool IsRotate { get; set; } =true;
+        public bool ShowXGrid { get; set; } = true;
+        public bool ShowYGrid { get; set; } = true;
 
 
 

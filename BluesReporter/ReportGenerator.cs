@@ -39,7 +39,7 @@ namespace ReportGenerator
 
                     page.Content().Column(col =>
                     {
-                        col.Item().Table(table =>
+                        col.Item().PaddingBottom(1).Table(table =>
                         {
                             table.ColumnsDefinition(columns =>
                             {
@@ -51,14 +51,21 @@ namespace ReportGenerator
 
                             table.AddDataCells(_config.Content.Data, _data, dataField, RankingMethod);
                         });
-                        //col.Item().PageBreak();
-                        _config.Content.Charts = [new ChartConfig()];
+                        //col.Item().PreventPageBreak();
+                        _config.Content.Charts = [new ChartConfig(), new ChartConfig()];
                         if (_config.Content.Charts.Any()) col.Item().AddDynamicChart(_config.Content.Charts, dataList!);
 
                     });
 
                     page.AddFooter(_config.Footer);
                 });
+            }).WithSettings(new DocumentSettings
+            {
+                PdfA=true,
+                CompressDocument = true,
+                ImageCompressionQuality = ImageCompressionQuality.High,
+                ImageRasterDpi = 288,
+                ContentDirection = ContentDirection.LeftToRight
             }).ShowInCompanion();
             return true;
         }

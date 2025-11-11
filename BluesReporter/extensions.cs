@@ -44,6 +44,7 @@ namespace BluesReporter
                  .ShowOncee(headerConfig.ShowOnce)
                  .PaddingBottom(headerConfig.PaddingBottom, unit)
                  .HAlign(headerConfig.Align)
+                 .AlignMiddle()
                  .Text(headerConfig.Text)
                  .IsBold(headerConfig.IsBold)
                  .FontSize(headerConfig.FontSize);
