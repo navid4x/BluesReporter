@@ -4,8 +4,10 @@ using BluesReporter.Models;
 using QuestPDF.Companion;
 using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
+using ScottPlot.TickGenerators.TimeUnits;
 using System.Collections;
 using System.Reflection;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ReportGenerator
 {
@@ -39,21 +41,24 @@ namespace ReportGenerator
 
                     page.Content().Column(col =>
                     {
-                        col.Item().PaddingBottom(1).Table(table =>
+                        if (_config.Content.Data != null && _config.Content.Headers != null)
                         {
-                            table.ColumnsDefinition(columns =>
+
+                            col.Item().PaddingBottom(_config.Content.MarginBetween).Table(table =>
                             {
-                                for (int i = 0; i < _config.Content.TotalColumns; i++)
-                                    columns.RelativeColumn();
+                                table.ColumnsDefinition(columns =>
+                                {
+                                    for (int i = 0; i < _config.Content.TotalColumns; i++)
+                                        columns.RelativeColumn();
+                                });
+
+                                table.AddHeaderCells(_config.Content.Headers, _data);
+
+                                table.AddDataCells(_config.Content.Data, _data, dataField, RankingMethod);
                             });
+                        }
 
-                            table.AddHeaderCells(_config.Content.Headers, _data);
-
-                            table.AddDataCells(_config.Content.Data, _data, dataField, RankingMethod);
-                        });
-                        //col.Item().PreventPageBreak();
-                        _config.Content.Charts = [new ChartConfig(), new ChartConfig()];
-                        if (_config.Content.Charts.Any()) col.Item().AddDynamicChart(_config.Content.Charts, dataList!);
+                        if (_config.Content.Charts != null && _config.Content.Charts.Any()) col.Item().PaddingBottom(_config.Content.MarginBetween).AddDynamicChart(_config.Content.Charts, dataList!);
 
                     });
 
@@ -61,70 +66,92 @@ namespace ReportGenerator
                 });
             }).WithSettings(new DocumentSettings
             {
-                PdfA=true,
+                PdfA = true,
                 CompressDocument = true,
                 ImageCompressionQuality = ImageCompressionQuality.High,
                 ImageRasterDpi = 288,
-                ContentDirection = ContentDirection.LeftToRight
+                ContentDirection = ContentDirection.RightToLeft,
             }).ShowInCompanion();
             return true;
         }
 
-
         private List<string> Validation<T>(TemplateConfig templateConfig, T model, string dataSet)
         {
-            if (model is null)
+            if (model == null)
             {
                 Errors.Add("مدل وارد شده خالی می باشد");
                 return Errors;
             }
-            if (templateConfig.Content.TotalColumns != templateConfig.Content.Data.Count)
+
+            var modelProps = model.GetType().GetProperties().Select(prop => prop.Name).ToHashSet();
+
+            var dataSource = model.GetType().GetProperty(dataSet)?.GetValue(model);
+            if (dataSource == null)
             {
-                Errors.Add("تعداد کل ستون تعریف شده با مقداد TotalColumns برابر نمی باشد.");
+                Errors.Add($"فیلدی با نام {dataSet} در مدل وجود ندارد.");
+                return Errors;
             }
 
-            List<string> fields = model.GetType().GetProperties().Select(a => a.Name).ToList();
-            foreach (HeaderCellConfig data in templateConfig.Content.Headers)
+            var list = dataSource is IEnumerable<object> items ? items.ToList() : new List<object>();
+            if (!list.Any())
             {
-                if (!data.Text.StartsWith("{")) continue;
+                Errors.Add("رکوردی برای ساخت جدول وجود ندارد.");
+                return Errors;
+            }
 
-                string field = data.Text.Replace("{", "").Replace("}", "");
-                if (!fields.Contains(field))
+            var dataSetProps = list.First().GetType().GetProperties().Select(prop => prop.Name).ToHashSet();
+
+            ValidateTemplateConfig(templateConfig, modelProps, dataSetProps);
+            return Errors;
+        }
+
+        private void ValidateTemplateConfig(TemplateConfig templateConfig, HashSet<string> modelProps, HashSet<string> dataSetProps)
+        {
+            if (templateConfig.Content.Data != null && templateConfig.Content.Headers != null)
+            {
+                if (templateConfig.Content.TotalColumns != templateConfig.Content.Data.Count)
                 {
-                    Errors.Add($"فیلدی با نام {field} وجود ندارد.");
+                    Errors.Add("تعداد کل ستون تعریف شده با مقداد TotalColumns برابر نمی باشد.");
+                }
+
+                ValidateHeaders(templateConfig.Content.Headers, modelProps);
+                ValidateDataCells(templateConfig.Content.Data, dataSetProps);
+
+            }
+
+            if (templateConfig.Content.Charts != null)
+            {
+                ValidateCharts(templateConfig.Content.Charts, dataSetProps);
+            }
+        }
+
+        private void ValidateHeaders(IEnumerable<HeaderCellConfig> headers, HashSet<string> fields)
+        {
+
+            foreach (var header in headers)
+            {
+                if (header.Text.StartsWith("{"))
+                {
+                    var field = header.Text.Trim('{', '}');
+                    if (!fields.Contains(field))
+                    {
+                        Errors.Add($"فیلدی با نام {field} وجود ندارد.");
+                    }
                 }
             }
 
+        }
 
-            System.Reflection.PropertyInfo? propInfo = typeof(TModel).GetProperty(dataSet);
-
-            if (propInfo == null)
-            {
-                Errors.Add($"فیلدی با نام {dataSet} در مدل وجود ندارد.");
-            }
-
-            object? val = propInfo!.GetValue(model);
-
-
-            List<object> list = val is System.Collections.IEnumerable items
-                ? items.Cast<object>().ToList()
-                : [];
-
-            if (list.Count == 0)
-            {
-                Errors.Add($"رکوردی برای ساخت جدول وجود ندارد.");
-            }
-
-
-            List<string>? props = list.FirstOrDefault()?.GetType().GetProperties().Select(a => a.Name).ToList();
-            foreach (DataCellConfig data in templateConfig.Content.Data)
+        private void ValidateDataCells(IEnumerable<DataCellConfig> dataCells, HashSet<string> props)
+        {
+            foreach (var data in dataCells)
             {
                 if (data.Order == null)
                 {
                     Errors.Add("وارد کردن مقدار order ضروری است.");
                 }
 
-                foreach (string rowSpan in data.RowSpan)
+                foreach (var rowSpan in data.RowSpan)
                 {
                     if (!int.TryParse(rowSpan, out _) && !rowSpan.Equals("all", StringComparison.OrdinalIgnoreCase))
                     {
@@ -132,14 +159,45 @@ namespace ReportGenerator
                     }
                 }
 
-                string field = data.Field.Replace("{", "").Replace("}", "");
-                if (!props!.Contains(field))
+                if (data.Field.StartsWith('{'))
                 {
-                    Errors.Add($"فیلدی با نام {field} وجود ندارد.");
+                    var field = data.Field.Trim('{', '}');
+                    if (!props.Contains(field))
+                    {
+                        Errors.Add($"فیلدی با نام {field} وجود ندارد.");
+                    }
                 }
             }
+        }
 
-            return Errors;
+        private void ValidateCharts(IEnumerable<ChartConfig> charts, HashSet<string> props)
+        {
+
+            foreach (var chart in charts)
+            {
+                if (chart.ShowLegend)
+                {
+                    if (string.IsNullOrEmpty(chart.LegendItems))
+                        Errors.Add("فیلدی برای راهنما تعریف نشده است");
+                    else
+                        ValidateChartField(chart.LegendItems, props);
+
+                }
+                ValidateChartField(chart.XValue, props);
+                ValidateChartField(chart.YValue, props);
+            }
+        }
+
+        private void ValidateChartField(string field, HashSet<string> props)
+        {
+            if (field.StartsWith("{"))
+            {
+                var trimmedField = field.Trim('{', '}');
+                if (!props.Contains(trimmedField))
+                {
+                    Errors.Add($"فیلدی با نام {trimmedField} وجود ندارد.");
+                }
+            }
         }
     }
 }

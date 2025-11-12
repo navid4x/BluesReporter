@@ -1,6 +1,7 @@
 ﻿using BluesReporter.Models;
 using ScottPlot;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace BluesReporter.Models
 {
@@ -24,11 +25,12 @@ namespace BluesReporter.Models
                 var json = File.ReadAllText(filePath);
                 var options = new JsonSerializerOptions
                 {
-                    PropertyNameCaseInsensitive = true
+                    PropertyNameCaseInsensitive = true,
+                    Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
                 };
                 return JsonSerializer.Deserialize<TemplateConfig>(json, options)!;
             }
-            catch
+            catch(Exception e)
             {
                 throw new InvalidOperationException("فرمت قالب صحیح نمی باشد، لطفا قالب را بررسی نمایید.");
             }
@@ -57,10 +59,11 @@ namespace BluesReporter.Models
 
     public class ContentConfig
     {
-        public int? TotalColumns { get; set; }
-        public List<HeaderCellConfig> Headers { get; set; } = new();
-        public List<DataCellConfig> Data { get; set; } = new();
-        public List<ChartConfig> Charts { get; set; }
+        public int TotalColumns { get; set; }
+        public float MarginBetween { get; set; } = 1;
+        public List<HeaderCellConfig>? Headers { get; set; }
+        public List<DataCellConfig>? Data { get; set; }
+        public List<ChartConfig>? Charts { get; set; }
     }
 
     public class HeaderCellConfig
@@ -97,26 +100,34 @@ namespace BluesReporter.Models
     {
         public int BorderSize { get; set; } = 1;
         public int Padding { get; set; } = 1;
-        public string YValue { get; set; } = "GrowthValue";
-        public string XValue { get; set; } = "UnitName";
-        public string YLabel { get; set; } = "تغییرات";
-        public string XLabel { get; set; } = "واحد ها";
+        public string YValue { get; set; } 
+        public string XValue { get; set; } 
+        public string LegendItems { get; set; } 
+        public string YLabel { get; set; }=string.Empty;
+        public string XLabel { get; set; } = string.Empty;
         public Edge LegendAlign { get; set; } = Edge.Bottom;
         public Orientation Orientation { get; set; } = Orientation.Horizontal;
-        public string ChartType { get; set; } = "line";
-        public bool ShowLegend { get; set; } = false;
+        public ChartTypes ChartType { get; set; } = ChartTypes.Bar;
+        public bool ShowLegend { get; set; } = true;
         public string Title { get; set; } = string.Empty;
         public string FontName { get; set; } = "P Nazanin";
-        public int FontSize { get; set; } = 10;
-        public string FormattingText { get; set; } ="0.00'%'";
+        public int ValueFontSize { get; set; } = 14;
+        public int LegendFontSize { get; set; } = 12;
+        public int LabelFontSize { get; set; } = 16;
+        public int TitleFontSize { get; set; } = 16;
+        public int AxisFontSize { get; set; } = 14;
+        public string FormattingText { get; set; } =string.Empty;
         public bool ShowValueLable { get; set; } =true;
         public bool IsRotate { get; set; } =true;
         public bool ShowXGrid { get; set; } = true;
         public bool ShowYGrid { get; set; } = true;
 
-
-
-
+    }
+    public enum ChartTypes
+    {
+        Pie,
+        Line,
+        Bar
     }
 }
 

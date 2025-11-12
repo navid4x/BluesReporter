@@ -5,7 +5,7 @@
         public decimal SourceValue { get; set; }
         public decimal DestinationValue { get; set; }
         public decimal ChangeValue => DestinationValue - SourceValue;
-        public float GrowthValue => (float)(((DestinationValue - SourceValue) / SourceValue) * 100);
+        public float GrowthValue => (float)((DestinationValue - SourceValue) / SourceValue * 100);
         public float TotalGrowthValue { get; set; }
         public string UnitName { get; set; }
         public int? Ranking { get; set; }

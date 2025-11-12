@@ -3,7 +3,9 @@ using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
 using ScottPlot;
 using ScottPlot.Palettes;
+using ScottPlot.Panels;
 using ScottPlot.Plottables;
+using ScottPlot.Rendering.RenderActions;
 using ScottPlot.TickGenerators;
 using SkiaSharp;
 using System.Collections;
@@ -23,10 +25,20 @@ public static class ReportChartHelper
 
         if (count == 1)
         {
-            var svg = GenerateChartSvg(chartConfig[0], dataList!);
-            container.AlignCenter().AlignMiddle()
-                     .AlignMiddle()
-                     .Svg(svg).FitArea();
+            var svg = GenerateChartSvg(chartConfig[0], dataList!, false);
+            if (chartConfig[0].ChartType != ChartTypes.Pie)
+            {
+
+                container.AlignCenter().AlignMiddle()
+                         .AlignMiddle()
+                         .Svg(svg).FitArea();
+            }
+            else
+            {
+                container.AlignCenter().AlignMiddle()
+                        .AlignMiddle()
+                        .Svg(svg).FitArea();
+            }
 
 
             return container;
@@ -38,13 +50,13 @@ public static class ReportChartHelper
                 column.Item().Row(row =>
                 {
                     var config1 = chartConfig[i];
-                    var svg1 = GenerateChartSvg(config1, dataList!);
+                    var svg1 = GenerateChartSvg(config1, dataList!, true);
                     row.RelativeItem().AlignCenter().AlignMiddle().Element(el => el.Svg(svg1).FitArea());
 
                     if (i + 1 < count)
                     {
                         var config2 = chartConfig[i + 1];
-                        var svg2 = GenerateChartSvg(config2, dataList!);
+                        var svg2 = GenerateChartSvg(config2, dataList!, true);
                         row.RelativeItem().AlignCenter().AlignMiddle().Scale(2).Element(el => el.Svg(svg2).FitArea());
                     }
                     else
@@ -59,23 +71,26 @@ public static class ReportChartHelper
         return container;
     }
 
-    private static string GenerateChartSvg(ChartConfig config, IList dataList)
+    private static string GenerateChartSvg(ChartConfig config, IList dataList, bool IsMultiple)
     {
+        int width = 0;
+        int height = 0;
         IPalette palette = new Category20();
         LabelStyle.RTLSupport = true;
         var plot = new Plot();
 
         plot.Font.Set(config.FontName);
-        plot.Title(config.Title, 12);
+        plot.Title(config.Title, config.TitleFontSize);
         plot.Axes.Bottom.Label.Text = config.XLabel;
-        plot.Axes.Bottom.Label.FontSize = 12;
-        plot.Axes.Left.Label.FontSize = 12;
+        plot.Axes.Bottom.Label.FontSize = config.LabelFontSize;
+        plot.Axes.Left.Label.FontSize = config.LabelFontSize;
         if (config.ShowLegend)
         {
             plot.ShowLegend(config.LegendAlign);
             plot.Legend.Orientation = config.Orientation;
-            plot.Legend.FontSize = 10;
+            plot.Legend.FontSize = config.LegendFontSize;
             plot.Legend.ShadowColor = Colors.White;
+    
         }
         else
         {
@@ -83,8 +98,24 @@ public static class ReportChartHelper
 
         }
 
+        if (IsMultiple)
+        {
+            height = 300;
+            width = 500;
+        }
+        else
+        {
+            height = 300;
+            width = 1100;
+        }
+
         var list = dataList!.Cast<object>();
         var labels = list.Select(item => item?.GetType().GetProperty(config.XValue)?.GetValue(item)?.ToString() ?? "نامشخص").ToArray();
+
+        var legendItems = config.XLabel == config.LegendItems
+                                           ? labels.ToList()
+                                           : list.Select(item => item?.GetType().GetProperty(config.LegendItems)?.GetValue(item)?.ToString() ?? "نامشخص").ToList();
+
         var rawValues = list.Select(item => Convert.ToDouble(item?.GetType().GetProperty(config.YValue)?.GetValue(item) ?? 0)).ToArray();
 
         var numbers = ScaleNumbers(rawValues);
@@ -93,9 +124,9 @@ public static class ReportChartHelper
 
         plot.Axes.Left.Label.Text = string.IsNullOrEmpty(scaleUnit) ? config.YLabel : $"{config.YLabel} ({scaleUnit})";
 
-        switch (config.ChartType.ToLower())
+        switch (config.ChartType)
         {
-            case "bar":
+            case ChartTypes.Bar:
                 {
                     var barPlot = plot.Add.Bars(values);
 
@@ -105,10 +136,11 @@ public static class ReportChartHelper
 
                         plot.Legend.ManualItems.Add(new LegendItem
                         {
-                            LabelText = labels[i],
+                            LabelText = legendItems[i],
                             FillColor = palette.GetColor(i),
-                        });
 
+                        });
+                        plot.Legend.FontSize = config.LegendFontSize;
                     }
 
                     if (config.ShowValueLable)
@@ -116,28 +148,29 @@ public static class ReportChartHelper
                         foreach (var bar in barPlot.Bars)
                         {
                             bar.Size = .5;
-                            bar.Label = bar.Value.ToString(config.FormattingText);
                             bar.LabelOffset = -3;
-
+                            bar.ValueLabel = bar.Value.ToString(config.FormattingText);
                         }
+
+                        barPlot.ValueLabelStyle.FontSize = config.ValueFontSize;
                     }
-                    
+
 
                     Tick[] ticks = labels.Select((label, i) => new Tick(i, label)).ToArray();
                     plot.Grid.YAxis.IsVisible = config.ShowYGrid;
                     plot.Grid.YAxis.IsVisible = config.ShowXGrid;
                     plot.Axes.Bottom.TickGenerator = new NumericManual(ticks);
                     plot.Axes.AutoScale();
-                   
+
                     plot.Axes.Bottom.MajorTickStyle.Length = 0;
                     if (config.IsRotate)
                     {
 
                         plot.Axes.Bottom.TickLabelStyle.Rotation = -45;
                         plot.Axes.Bottom.TickLabelStyle.Alignment = Alignment.UpperRight;
-                        plot.Axes.Bottom.TickLabelStyle.OffsetY = -13;
+                        plot.Axes.Bottom.TickLabelStyle.OffsetY = -10;
                         plot.Axes.Bottom.TickLabelStyle.OffsetX = 5;
-                        plot.Axes.Bottom.TickLabelStyle.FontSize = 10;
+                        plot.Axes.Bottom.TickLabelStyle.FontSize = config.AxisFontSize;
                     }
 
                     if (values.Min() < 0)
@@ -148,9 +181,11 @@ public static class ReportChartHelper
                     {
                         plot.Axes.Margins(bottom: 0, top: .3);
                     }
+
                     break;
+
                 }
-            case "pie":
+            case ChartTypes.Pie:
                 {
                     var pieList = new List<PieSlice>();
                     for (int i = 0; i < values.Count(); i++)
@@ -165,9 +200,9 @@ public static class ReportChartHelper
                             });
                             plot.Legend.ManualItems.Add(new LegendItem
                             {
-                                LabelText = labels[i],
+                                LabelText = legendItems[i],
                                 FillColor = palette.GetColor(i),
-
+                                LabelFontSize = config.LegendFontSize
                             });
                         }
                     }
@@ -175,18 +210,13 @@ public static class ReportChartHelper
                     pie.DonutFraction = 0.5;
                     pie.LineColor = Colors.White;
                     pie.SliceLabelDistance = 1.5;
-                    //if (config.ShowLegend)
-                    //{
-                    //    plot.ShowLegend(config.LegendAlign);
-                    //    plot.Legend.Orientation = config.Orientation;
-                    //    plot.Legend.FontSize = 10;
-                    //    plot.Legend.ShadowColor = Colors.White;
-                    //}
                     plot.HideAxesAndGrid();
 
+                    height = 300;
+                    width = 600;
                     break;
                 }
-            case "line":
+            case ChartTypes.Line:
                 {
 
                     double[] xs = Generate.Consecutive(values.Length);
@@ -198,13 +228,14 @@ public static class ReportChartHelper
                         {
                             double x = xs[i];
                             double y = values[i];
-                            double textY = y;
-                            var txt = plot.Add.Text(y.ToString(config.FormattingText), x, textY);
-                            txt.LabelFontSize = 11;
+                            var txt = plot.Add.Text(y.ToString(config.FormattingText), x, y);
+                            txt.LabelFontSize = config.ValueFontSize;
                             txt.OffsetY = -5;
                             txt.LabelAlignment = Alignment.LowerCenter;
                         }
                     }
+                    if (config.ShowLegend) line.LegendText = "آیتم";
+
                     line.LineWidth = 2;
                     line.MarkerSize = 6;
                     line.Color = Colors.Blue;
@@ -217,9 +248,9 @@ public static class ReportChartHelper
 
                         plot.Axes.Bottom.TickLabelStyle.Rotation = -45;
                         plot.Axes.Bottom.TickLabelStyle.Alignment = Alignment.UpperRight;
-                        plot.Axes.Bottom.TickLabelStyle.OffsetY = -11;
+                        plot.Axes.Bottom.TickLabelStyle.OffsetY = -10;
                         plot.Axes.Bottom.TickLabelStyle.OffsetX = 5;
-                        plot.Axes.Bottom.TickLabelStyle.FontSize = 10;
+                        plot.Axes.Bottom.TickLabelStyle.FontSize = config.AxisFontSize;
                     }
 
                     if (values.Min() < 0)
@@ -230,12 +261,14 @@ public static class ReportChartHelper
                     {
                         plot.Axes.Margins(bottom: 0, top: .3);
                     }
+
+
                     break;
                 }
 
         }
 
-        return plot.GetSvgXml(500, 300);
+        return plot.GetSvgXml(width, height);
     }
 
     public static (string unit, double[] scaledNumbers) ScaleNumbers(double[] numbers)
