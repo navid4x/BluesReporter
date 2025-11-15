@@ -26,20 +26,10 @@ public static class ReportChartHelper
         if (count == 1)
         {
             var svg = GenerateChartSvg(chartConfig[0], dataList!, false);
-            if (chartConfig[0].ChartType != ChartTypes.Pie)
-            {
 
-                container.AlignCenter().AlignMiddle()
-                         .AlignMiddle()
-                         .Svg(svg).FitArea();
-            }
-            else
-            {
-                container.AlignCenter().AlignMiddle()
-                        .AlignMiddle()
-                        .Svg(svg).FitArea();
-            }
-
+            container.AlignCenter().AlignMiddle()
+                     .AlignMiddle()
+                     .Svg(svg).FitArea();
 
             return container;
         }
@@ -49,19 +39,21 @@ public static class ReportChartHelper
             {
                 column.Item().Row(row =>
                 {
-                    var config1 = chartConfig[i];
-                    var svg1 = GenerateChartSvg(config1, dataList!, true);
-                    row.RelativeItem().AlignCenter().AlignMiddle().Element(el => el.Svg(svg1).FitArea());
 
                     if (i + 1 < count)
                     {
+                        var config1 = chartConfig[i];
+                        var svg1 = GenerateChartSvg(config1, dataList!, true);
+                        row.RelativeItem().AlignCenter().AlignMiddle().Element(el => el.Svg(svg1).FitArea());
                         var config2 = chartConfig[i + 1];
                         var svg2 = GenerateChartSvg(config2, dataList!, true);
-                        row.RelativeItem().AlignCenter().AlignMiddle().Scale(2).Element(el => el.Svg(svg2).FitArea());
+                        row.RelativeItem().AlignCenter().AlignMiddle().Element(el => el.Svg(svg2).FitArea());
                     }
                     else
                     {
-                        row.RelativeItem().AlignCenter().AlignMiddle().AlignCenter().Svg(svg1).FitArea();
+                        var config1 = chartConfig[i];
+                        var svg1 = GenerateChartSvg(config1, dataList!, false);
+                        row.RelativeItem().AlignCenter().AlignMiddle().AlignCenter().Svg(svg1).FitWidth();
                     }
                 });
 
@@ -90,7 +82,7 @@ public static class ReportChartHelper
             plot.Legend.Orientation = config.Orientation;
             plot.Legend.FontSize = config.LegendFontSize;
             plot.Legend.ShadowColor = Colors.White;
-    
+
         }
         else
         {
@@ -140,8 +132,8 @@ public static class ReportChartHelper
                             FillColor = palette.GetColor(i),
 
                         });
-                        plot.Legend.FontSize = config.LegendFontSize;
                     }
+                    plot.Legend.FontSize = config.LegendFontSize;
 
                     if (config.ShowValueLable)
                     {
@@ -167,8 +159,8 @@ public static class ReportChartHelper
                     {
 
                         plot.Axes.Bottom.TickLabelStyle.Rotation = -45;
-                        plot.Axes.Bottom.TickLabelStyle.Alignment = Alignment.UpperRight;
-                        plot.Axes.Bottom.TickLabelStyle.OffsetY = -10;
+                        plot.Axes.Bottom.TickLabelStyle.Alignment = Alignment.MiddleRight;
+                        plot.Axes.Bottom.TickLabelStyle.OffsetY = -6;
                         plot.Axes.Bottom.TickLabelStyle.OffsetX = 5;
                         plot.Axes.Bottom.TickLabelStyle.FontSize = config.AxisFontSize;
                     }
@@ -234,7 +226,7 @@ public static class ReportChartHelper
                             txt.LabelAlignment = Alignment.LowerCenter;
                         }
                     }
-                    if (config.ShowLegend) line.LegendText = "آیتم";
+                    if (config.ShowLegend) line.LegendText = config.LegendItems;
 
                     line.LineWidth = 2;
                     line.MarkerSize = 6;
@@ -247,8 +239,8 @@ public static class ReportChartHelper
                     {
 
                         plot.Axes.Bottom.TickLabelStyle.Rotation = -45;
-                        plot.Axes.Bottom.TickLabelStyle.Alignment = Alignment.UpperRight;
-                        plot.Axes.Bottom.TickLabelStyle.OffsetY = -10;
+                        plot.Axes.Bottom.TickLabelStyle.Alignment = Alignment.MiddleRight;
+                        plot.Axes.Bottom.TickLabelStyle.OffsetY = -6;
                         plot.Axes.Bottom.TickLabelStyle.OffsetX = 5;
                         plot.Axes.Bottom.TickLabelStyle.FontSize = config.AxisFontSize;
                     }

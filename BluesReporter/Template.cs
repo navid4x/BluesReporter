@@ -9,7 +9,7 @@ namespace BluesReporter.Models
     {
         public bool RTL { get; set; } = true;
         public float Margin { get; set; } = 10;
-        public string Font { get; set; } = "B Nazanin";
+        public string Font { get; set; } = "P Nazanin";
         public string PaperSize { get; set; } = "A4";
         public string Orientation { get; set; } = "Landscape";
 
@@ -30,7 +30,7 @@ namespace BluesReporter.Models
                 };
                 return JsonSerializer.Deserialize<TemplateConfig>(json, options)!;
             }
-            catch(Exception e)
+            catch
             {
                 throw new InvalidOperationException("فرمت قالب صحیح نمی باشد، لطفا قالب را بررسی نمایید.");
             }
@@ -85,7 +85,7 @@ namespace BluesReporter.Models
         public float BorderSize { get; set; } = 1;
         public float Padding { get; set; } = 1;
         public string Align { get; set; } = "center";
-        public string FormattingText { get; set; } = string.Empty;
+        public string FormattingText { get; set; } = "N0";
         public bool RTL { get; set; } = true;
         public bool IsBold { get; set; } = false;
         public bool IsRepeated { get; set; } = true;
@@ -101,8 +101,8 @@ namespace BluesReporter.Models
         public int BorderSize { get; set; } = 1;
         public int Padding { get; set; } = 1;
         public string YValue { get; set; } 
-        public string XValue { get; set; } 
-        public string LegendItems { get; set; } 
+        public string XValue { get; set; }
+        public string LegendItems { get; set; }
         public string YLabel { get; set; }=string.Empty;
         public string XLabel { get; set; } = string.Empty;
         public Edge LegendAlign { get; set; } = Edge.Bottom;
@@ -116,7 +116,7 @@ namespace BluesReporter.Models
         public int LabelFontSize { get; set; } = 16;
         public int TitleFontSize { get; set; } = 16;
         public int AxisFontSize { get; set; } = 14;
-        public string FormattingText { get; set; } =string.Empty;
+        public string FormattingText { get; set; } = "N0";
         public bool ShowValueLable { get; set; } =true;
         public bool IsRotate { get; set; } =true;
         public bool ShowXGrid { get; set; } = true;

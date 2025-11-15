@@ -190,6 +190,7 @@ namespace ReportGenerator
 
         private void ValidateChartField(string field, HashSet<string> props)
         {
+
             if (field.StartsWith("{"))
             {
                 var trimmedField = field.Trim('{', '}');
@@ -198,6 +199,7 @@ namespace ReportGenerator
                     Errors.Add($"فیلدی با نام {trimmedField} وجود ندارد.");
                 }
             }
+
         }
     }
 }
