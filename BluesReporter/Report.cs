@@ -1,4 +1,7 @@
-﻿namespace BluesReporter
+﻿using QuestPDF.Infrastructure;
+using static QuestPDF.Helpers.Colors;
+
+namespace BluesReporter
 {
     public class ReportItem
     {
@@ -73,4 +76,61 @@
         }
     }
 
+    public class StaticReport
+    {
+        public string TargetUnit { get; set; }
+        public string IndicatorName { get; set; }
+        public string Description { get; set; }=string.Empty;
+        public List<StaticReportItem> ValueList { get; set; } = new();
+
+
+        public StaticReport()
+        {
+            List<string> Banks = ["تجارت", "ملت", "صادرات", "رفاه", "سپه", "ملی"];
+            Random rnd = new Random();
+            List<StaticReportItem> list= new();
+            TargetUnit = "البرز";
+            IndicatorName = "وضعیت مانده سپرده";
+            Description= string.Empty;
+
+            foreach (var bank in Banks)
+            {
+                list.Add(new StaticReportItem()
+                {
+                    BankName = bank,
+                    Value = rnd.Next(10, 30),
+                    TargetDate = "اسفند 1402",
+                });
+
+            }
+            int i = 1;
+            list.OrderBy(a => a.Value).ToList().ForEach(a=>a.Ranking=i++);
+            ValueList.AddRange(list);
+
+            list.Clear();
+            foreach (var bank in Banks)
+            {
+                list.Add(new StaticReportItem()
+                {
+                    BankName = bank,
+                    Value = rnd.Next(10, 30),
+                    TargetDate = "اسفند 1403",
+                });
+
+            }
+            i = 1;
+            list.OrderBy(a => a.Value).ToList().ForEach(a => a.Ranking = i++);
+            ValueList.AddRange(list);
+
+
+        }
+    }
+    public class StaticReportItem
+    {
+        public string BankName { get; set; }
+        public double Value { get; set; }
+        public string TargetDate { get; set; }
+        public int Ranking { get; set; }
+
+    }
 }

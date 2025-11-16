@@ -19,7 +19,9 @@ public static class ReportChartHelper
     public static IContainer AddDynamicChart(this IContainer container, List<ChartConfig> chartConfig, object data)
     {
         var dataList = data as IList;
-
+        chartConfig.ForEach(a => a.XValue = a.XValue.Trim('{', '}'));
+        chartConfig.ForEach(a => a.YValue = a.YValue.Trim('{', '}'));
+        chartConfig.ForEach(a => a.LegendItems = a.LegendItems.Trim('{', '}'));
         int count = chartConfig.Count;
         if (count == 0) return container;
 
@@ -100,6 +102,8 @@ public static class ReportChartHelper
             height = 300;
             width = 1100;
         }
+
+      
 
         var list = dataList!.Cast<object>();
         var labels = list.Select(item => item?.GetType().GetProperty(config.XValue)?.GetValue(item)?.ToString() ?? "نامشخص").ToArray();

@@ -135,7 +135,7 @@ namespace BluesReporter
 
             var itemType = values[0]!.GetType();
             var totalRows = values.Count;
-
+            configs.ForEach(a => a.Field = a.Field.Trim('{','}'));
             var propCache = configs.ToDictionary(
                 c => c.Field,
                 c => itemType.GetProperty(c.Field));
