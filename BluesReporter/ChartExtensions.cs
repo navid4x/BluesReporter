@@ -3,13 +3,8 @@ using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
 using ScottPlot;
 using ScottPlot.Palettes;
-using ScottPlot.Panels;
-using ScottPlot.Plottables;
-using ScottPlot.Rendering.RenderActions;
 using ScottPlot.TickGenerators;
-using SkiaSharp;
 using System.Collections;
-using System.Globalization;
 
 
 namespace BluesReporter.Charts;
