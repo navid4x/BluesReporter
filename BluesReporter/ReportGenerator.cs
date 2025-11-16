@@ -5,7 +5,9 @@ using QuestPDF.Companion;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using ScottPlot.Colormaps;
 using static QuestPDF.Helpers.Colors;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ReportGenerator
 {
@@ -42,15 +44,24 @@ namespace ReportGenerator
                             {
                                 int count = IsTargetedUnit ? 12 : 11;
                                 for (int i = 0; i < count; i++)
-                                    columns.RelativeColumn();
+
+                                    if (IsTargetedUnit && i < 2)
+                                        columns.RelativeColumn(1.3f);
+                                    else if (!IsTargetedUnit && i == 0)
+                                        columns.RelativeColumn(1.3f);
+                                    else
+                                        columns.RelativeColumn();
+
+
                             });
 
                             if (IsTargetedUnit)
-                                table.Cell().RowSpan(9).Border(.5f).AlignMiddle().AlignCenter().Padding(5).Text(data!.TargetUnit).FontSize(16).Bold();
+                                BuildCell(table, data!.TargetUnit, rowSpan: 11);
 
-                            table.Cell().ColumnSpan(11).Background(Color.FromHex("#E6B8B7")).Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text(data.IndicatorName).FontSize(16).Bold();
+                            BuildCell(table, data.IndicatorName, "#E6B8B7", fontSize: 16, colSpan: 11);
 
-                            table.Cell().Background(Color.FromHex("#F2DCDB")).Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text("رتبه").FontSize(14).Bold();
+                            BuildCell(table, "رتبه", "#F2DCDB");
+
 
                             var changedRank = data.ValueList
                                                 .GroupBy(s => s.BankName)
@@ -70,36 +81,33 @@ namespace ReportGenerator
                             var show = true;
                             foreach (var date in grouped.First())
                             {
-                                table.Cell().Border(.5f).Background(Color.FromHex("#F2DCDB")).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text(date.BankName).FontSize(14).Bold();
-
+                                BuildCell(table, date.BankName, "#F2DCDB");
                             }
-                            table.Cell().ColumnSpan(4).Background(Color.FromHex("#F2DCDB")).Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text("توضیحات").FontSize(14).Bold();
+                            BuildCell(table, "توضیحات", "#F2DCDB", colSpan: 4);
 
                             foreach (var date in grouped)
                             {
-                                table.Cell().Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text(date.Key).FontSize(14).Bold();
+                                BuildCell(table, date.Key);
 
                                 foreach (var unit in date)
                                 {
-                                    table.Cell().Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text(unit.Ranking.ToString()).FontSize(14).Bold();
+                                    BuildCell(table, unit.Ranking.ToString());
                                 }
                                 if (show)
                                 {
-                                    table.Cell().RowSpan(3).ColumnSpan(4).Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text(data.Description).FontSize(14).Bold();
+                                    BuildCell(table, data.Description, colSpan: 4, rowSpan: 3);
                                     show = false;
                                 }
 
                             }
 
-                            table.Cell().Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text("تغییرات").FontSize(14).Bold();
+                            BuildCell(table, "تغییرات");
 
                             foreach (var data in changedRank)
                             {
-                                table.Cell().Background(GetBackgroundColor(data.Change!.Value)).Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text(data.Change.ToString()).FontSize(14).Bold();
-
+                                BuildCell(table, data.Change.ToString()!, GetBackgroundColor(data.Change!.Value));
 
                             }
-
 
                             var changedValue = data.ValueList
                                              .GroupBy(s => s.BankName)
@@ -119,29 +127,28 @@ namespace ReportGenerator
                             var showtitle = true;
                             var showName = false;
 
-                            table.Cell().Background(Color.FromHex("#F2DCDB")).Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text("سهم از بازار").FontSize(14).Bold();
+                            BuildCell(table, "سهم از بازار", "#F2DCDB");
 
                             foreach (var date in grouped.First())
                             {
-                                table.Cell().Background(Color.FromHex("#F2DCDB")).Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text(date.BankName).FontSize(14).Bold();
-
+                                BuildCell(table, date.BankName, "#F2DCDB");
                             }
 
-                            table.Cell().ColumnSpan(4).Background(Color.FromHex("#F2DCDB")).Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text("توضیحات").FontSize(14).Bold();
+                            BuildCell(table, "توضیحات", "#F2DCDB", colSpan: 4);
 
                             foreach (var date in grouped)
                             {
-                                table.Cell().Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text(date.Key).FontSize(14).Bold();
+                                BuildCell(table, date.Key);
 
                                 foreach (var unit in date)
                                 {
-                                    table.Cell().Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text(unit.Value.ToString()).FontSize(14).Bold();
+                                    BuildCell(table, unit.Value.ToString());
                                 }
                                 if (showtitle)
                                 {
+                                    BuildCell(table, "بیشترین افزایش سهم", colSpan: 2, textColor: "#1515FF", fontSize: 12);
+                                    BuildCell(table, "بیشترین کاهش سهم", colSpan: 2, textColor: "#1515FF", fontSize: 12);
 
-                                    table.Cell().ColumnSpan(2).Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text("بیشترین افزایش سهم از بازار").FontSize(12).Bold().FontColor(Color.FromHex("#1515FF"));
-                                    table.Cell().ColumnSpan(2).Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text("بیشترین کاهش سهم از بازار").FontSize(12).Bold().FontColor(Color.FromHex("#1515FF"));
                                     showtitle = false;
                                 }
                                 if (showName)
@@ -149,11 +156,11 @@ namespace ReportGenerator
 
                                     foreach (var top in tops)
                                     {
-                                        table.Cell().Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text(top.BankName).FontSize(14).Bold().FontColor(Color.FromHex("#1515FF"));
+                                        BuildCell(table, top.BankName, textColor: "#1515FF");
                                     }
                                     foreach (var down in downs)
                                     {
-                                        table.Cell().Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text(down.BankName).FontSize(14).Bold().FontColor(Color.FromHex("#1515FF"));
+                                        BuildCell(table, down.BankName, textColor: "#1515FF");
                                     }
 
                                 }
@@ -162,21 +169,20 @@ namespace ReportGenerator
 
                             }
 
-                            table.Cell().Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text("تغییرات").FontSize(14).Bold();
+                            BuildCell(table, "تغییرات");
 
                             foreach (var data in changedValue)
                             {
-                                table.Cell().Background(GetBackgroundColor(data.Change!.Value)).Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text(data.Change.ToString()).FontSize(14).Bold();
-
+                                BuildCell(table, data.Change.ToString()!, backgroundColor: GetBackgroundColor(data.Change!.Value));
                             }
 
                             foreach (var top in tops)
                             {
-                                table.Cell().Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text(top.Change.ToString()).FontSize(14).Bold().FontColor(GetTextColor(top.Change!.Value));
+                                BuildCell(table, top.Change.ToString()!, textColor: GetTextColor(top.Change!.Value));
                             }
                             foreach (var down in downs)
                             {
-                                table.Cell().Border(.5f).AlignCenter().AlignMiddle().Padding(5).PaddingVertical(8).Text(down.Change.ToString()).FontSize(14).Bold().FontColor(GetTextColor(down.Change!.Value));
+                                BuildCell(table, down.Change.ToString()!, textColor: GetTextColor(down.Change!.Value));
                             }
 
                         });
@@ -250,23 +256,36 @@ namespace ReportGenerator
             return true;
 
         }
-        private void BuildCell(TableDescriptor table)
+        private void BuildCell(TableDescriptor table, string data, string backgroundColor = "ffffff", string textColor = "000000", int fontSize = 14, uint colSpan = 1, uint rowSpan = 1)
         {
+            table.Cell()
+                .ColumnSpan(colSpan)
+                .RowSpan(rowSpan)
+                .Background(Color.FromHex(backgroundColor))
+                .Border(.5f)
+                .AlignCenter()
+                .AlignMiddle()
+                .PaddingHorizontal(5)
+                .PaddingVertical(12)
+                .Text(data)
+                .FontSize(fontSize)
+                .Bold()
+                .FontColor(Color.FromHex(textColor));
 
         }
-        private Color GetBackgroundColor(int number)
+        private string GetBackgroundColor(int number)
         {
-            if (number == 0) return Color.FromHex("#DCE6F1");
-            if (number > 0) return Color.FromHex("#92D050");
-            if (number < 0) return Color.FromHex("#FF8989");
-            return Blue.Lighten5;
+            if (number == 0) return "#DCE6F1";
+            if (number > 0) return "#92D050";
+            if (number < 0) return "#FF8989";
+            return "#DCE6F1";
         }
-        private Color GetTextColor(int number)
+        private string GetTextColor(int number)
         {
-            if (number == 0) return Color.FromHex("#000000");
-            if (number > 0) return Color.FromHex("#00B050");
-            if (number < 0) return Color.FromHex("#FF0000");
-            return Blue.Lighten5;
+            if (number == 0) return "#000000";
+            if (number > 0) return "#00B050";
+            if (number < 0) return "#FF0000";
+            return "#000000";
         }
 
         #region Validations
