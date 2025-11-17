@@ -17,6 +17,7 @@ public static class ReportChartHelper
         chartConfig.ForEach(a => a.XValue = a.XValue.Trim('{', '}'));
         chartConfig.ForEach(a => a.YValue = a.YValue.Trim('{', '}'));
         chartConfig.ForEach(a => a.LegendItems = a.LegendItems.Trim('{', '}'));
+
         int count = chartConfig.Count;
         if (count == 0) return container;
 
@@ -209,7 +210,6 @@ public static class ReportChartHelper
                 }
             case ChartTypes.Line:
                 {
-
                     double[] xs = Generate.Consecutive(values.Length);
                     var line = plot.Add.Scatter(xs, values);
 

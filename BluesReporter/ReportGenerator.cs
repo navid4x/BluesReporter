@@ -105,7 +105,7 @@ namespace ReportGenerator
 
                             foreach (var data in changedRank)
                             {
-                                BuildCell(table, data.Change.ToString()!, GetBackgroundColor(data.Change!.Value));
+                                BuildCell(table, data.Change.ToString()!, GetBackgroundColor(data.Change!.Value),IsRTL:false);
 
                             }
 
@@ -173,16 +173,16 @@ namespace ReportGenerator
 
                             foreach (var data in changedValue)
                             {
-                                BuildCell(table, data.Change.ToString()!, backgroundColor: GetBackgroundColor(data.Change!.Value));
+                                BuildCell(table, data.Change.ToString()!, backgroundColor: GetBackgroundColor(data.Change!.Value), IsRTL: false);
                             }
 
                             foreach (var top in tops)
                             {
-                                BuildCell(table, top.Change.ToString()!, textColor: GetTextColor(top.Change!.Value));
+                                BuildCell(table, top.Change.ToString()!, textColor: GetTextColor(top.Change!.Value), IsRTL: false);
                             }
                             foreach (var down in downs)
                             {
-                                BuildCell(table, down.Change.ToString()!, textColor: GetTextColor(down.Change!.Value));
+                                BuildCell(table, down.Change.ToString()!, textColor: GetTextColor(down.Change!.Value), IsRTL: false);
                             }
 
                         });
@@ -256,7 +256,7 @@ namespace ReportGenerator
             return true;
 
         }
-        private void BuildCell(TableDescriptor table, string data, string backgroundColor = "ffffff", string textColor = "000000", int fontSize = 14, uint colSpan = 1, uint rowSpan = 1)
+        private void BuildCell(TableDescriptor table, string data, string backgroundColor = "ffffff", string textColor = "000000", int fontSize = 14, uint colSpan = 1, uint rowSpan = 1,bool IsRTL=true)
         {
             table.Cell()
                 .ColumnSpan(colSpan)
@@ -267,6 +267,7 @@ namespace ReportGenerator
                 .AlignMiddle()
                 .PaddingHorizontal(5)
                 .PaddingVertical(12)
+                .NotRTL(IsRTL)
                 .Text(data)
                 .FontSize(fontSize)
                 .Bold()

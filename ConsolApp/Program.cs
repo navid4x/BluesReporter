@@ -9,5 +9,5 @@ var template = TemplateConfig.Load(@"d:\\Template.json");
 var rankingColor = new Dictionary<int, Func<int?, string>>();
 rankingColor.Add(6, report.GetColor);
 var builder = new ReportBuilder();
-builder.GenerateStatic("",staticReport,false);
+builder.GenerateStatic("",staticReport,true);
 //builder.GenerateDynamic("", template, report,"Items", rankingColor);

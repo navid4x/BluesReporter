@@ -7,7 +7,6 @@ namespace BluesReporter.Models
 {
     public class TemplateConfig
     {
-        public ReportType ReportType { get; set; } = ReportType.Dynamic;
         public bool RTL { get; set; } = true;
         public float Margin { get; set; } = 10;
         public string Font { get; set; } = "P Nazanin";
@@ -130,10 +129,6 @@ namespace BluesReporter.Models
         Line,
         Bar
     }
-    public enum ReportType
-    {
-        Static,
-        Dynamic
-    }
+ 
 }
 
