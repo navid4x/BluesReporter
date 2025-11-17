@@ -196,7 +196,7 @@ namespace ReportGenerator
                 ImageCompressionQuality = ImageCompressionQuality.High,
                 ImageRasterDpi = 288,
                 ContentDirection = ContentDirection.RightToLeft,
-            }).ShowInCompanion();
+            }).GeneratePdf(outputPath);
             return true;
         }
         public bool GenerateDynamic(string outputPath, TemplateConfig _config, object _data, string dataField, Dictionary<int, Func<int?, string>>? RankingMethod = default)
@@ -252,7 +252,7 @@ namespace ReportGenerator
                 ImageCompressionQuality = ImageCompressionQuality.High,
                 ImageRasterDpi = 288,
                 ContentDirection = ContentDirection.RightToLeft,
-            }).ShowInCompanion();
+            }).GeneratePdf(outputPath);
             return true;
 
         }

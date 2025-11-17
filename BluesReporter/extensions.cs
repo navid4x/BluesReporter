@@ -172,7 +172,7 @@ namespace BluesReporter
 
                     var config = sortedConfigs[colIndex];
                     var prop = propCache[config.Field];
-                    var rawValue = prop.GetValue(item) ?? "";
+                    var rawValue = prop!.GetValue(item) ?? "";
                     var cellText = FormatCellValue(rawValue, config.FormattingText);
 
                     var bgColor = GetBackgroundColor(cellText, config, colIndex, rankingMethods);
@@ -195,6 +195,10 @@ namespace BluesReporter
                     }
                 }
             }
+
+            //for clear memory and helping to GC
+            RowSpanTracker.Value?.Clear();
+            RowSpanTracker.Value = null!;
 
             return descriptor;
         }

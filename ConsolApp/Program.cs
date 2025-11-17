@@ -1,13 +1,25 @@
-﻿using BluesReporter;
-using BluesReporter.Models;
+﻿using BluesReporter.Models;
+using BluesReporter;
 using ReportGenerator;
+using System.Diagnostics;
 
-var report =new Report();
-var staticReport =new StaticReport();
+Stopwatch sw = Stopwatch.StartNew();
 
-var template = TemplateConfig.Load(@"d:\\Template.json");
+var report = new Report();
+var staticReport = new StaticReport();
 var rankingColor = new Dictionary<int, Func<int?, string>>();
 rankingColor.Add(6, report.GetColor);
+
+sw.Start();
+var template = TemplateConfig.Load(@"d:\\Template.json");
 var builder = new ReportBuilder();
-builder.GenerateStatic("",staticReport,true);
-//builder.GenerateDynamic("", template, report,"Items", rankingColor);
+for (int i = 0; i < 1000; i++)
+{
+    builder.GenerateDynamic($"d:\\Text\\{i}.pdf", template, report, "Items", rankingColor);
+
+}
+sw.Stop();
+
+var a = sw.ElapsedMilliseconds;
+
+builder.GenerateStatic($"d:\\Text\\.pdf", staticReport, true);
